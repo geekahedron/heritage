@@ -5,8 +5,8 @@ desc:'A simple mod that adds corpse cremation.',
 engineVersion:1,
 manifest:'modManifest.js',
 requires:['Default dataset*'],
-//sheets:{'creamtionSheet':'img/cremationModIconSheet.png'},
-sheets:{'creamtionSheet':'https://github.com/geekahedron/heritage/blob/master/img/cremationModIconSheet.png?raw=true'},
+//sheets:{'cremationSheet':'img/cremationModIconSheet.png'},
+sheets:{'cremationSheet':'https://github.com/geekahedron/heritage/blob/master/img/cremationModIconSheet.png?raw=true'},
 func:function()
 {
 	//First we create a couple new resources :
