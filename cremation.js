@@ -6,14 +6,14 @@ engineVersion:1,
 manifest:'modManifest.js',
 requires:['Default dataset*'],
 //sheets:{'cremationSheet':'img/cremationModIconSheet.png'},
-sheets:{'cremationSheet':'https://github.com/geekahedron/heritage/blob/master/img/cremationModIconSheet.png?raw=true'},
+//sheets:{'cremationSheet':'https://github.com/geekahedron/heritage/blob/master/img/cremationModIconSheet.png?raw=true'},
 func:function()
 {
 	//Create new unit, ash, as a byproduct
 	new G.Res({
 		name:'ash',
 		desc:'[ash] is a byproduct of firemaking activities that can be used in agriculture.',
-		icon:[0,0,'cremationSheet'],
+		icon:[0,0],
 		category:'misc',
 	});
 	
@@ -21,7 +21,7 @@ func:function()
 	new G.Unit({
 		name:'crematorium',
 		desc:'@processes goods with fire<>A [crematorium] is an efficient way to dispose of [corpse]s.',//TODO : desc
-		icon:[1,0,'cremationSheet'],
+		icon:[1,0],
 		cost:{'basic building materials':50},
 		use:{'land':1},
 		require:{'worker':1},
@@ -42,7 +42,7 @@ func:function()
 	new G.Tech({
 		name:'cremation',
 		desc:'@[corpse]s can now be burned into [ash].//Cremation can save space and prevent the spread of disease..',
-		icon:[0,1,'cremationSheet'],
+		icon:[0,1],
 		cost:{'insight':5},
 		req:{'fire-making':true},
 	});
