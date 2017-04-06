@@ -5,8 +5,8 @@ desc:'A simple mod that adds corpse cremation.',
 engineVersion:1,
 manifest:'modManifest.js',
 requires:['Default dataset*'],
-//sheets:{'creamtionSheet':'img/cremationModIconSheet.png'},//custom stylesheet (note : broken in IE and Edge for the time being)
-sheets:{'creamtionSheet':'https://github.com/geekahedron/heritage/blob/master/img/cremationModIconSheet.png?raw=true'},//custom stylesheet (note : broken in IE and Edge for the time being)
+//sheets:{'creamtionSheet':'img/cremationModIconSheet.png'},
+sheets:{'creamtionSheet':'https://github.com/geekahedron/heritage/blob/master/img/cremationModIconSheet.png?raw=true'},
 func:function()
 {
 	//First we create a couple new resources :
@@ -19,18 +19,17 @@ func:function()
 	
 	new G.Unit({
 		name:'crematorium',
-		desc:'@processes goods with fire<>A [crematorium] is an efficient way to dispose of .',//TODO : desc
+		desc:'@processes goods with fire<>A [crematorium] is an efficient way to dispose of [corpse]s.',//TODO : desc
 		icon:[1,0,cremationSheet],
 		cost:{'basic building materials':50},
 		use:{'land':1},
-		//require:{'worker':1,'fire pit':1},
-		//upkeep:{'stick':3},//TODO : some fuel system
+		require:{'worker':1},
 		modes:{
 			'off':G.MODE_OFF,
-			'cremate':{name:'Cremate corpses',icon:[1,0,'cremationSheet'],desc:'Turn 1 [corpse] into [ash].',use:{'worker':1},req:{}},
+			'cremate':{name:'Cremate corpses',icon:[1,0,'cremationSheet'],desc:'Turn 1 [corpse] into [ash] using a [fire pit].',use:{'worker':1},req:{}},
 		},
 		effects:[
-			{type:'convert',from:{'corpse':1},into:{'ash':1},every:5,mode:'cremate'},
+			{type:'convert',from:{'corpse':1,'fire pit':0.01},into:{'ash':1},every:5,mode:'cremate'},
 		],
 		gizmos:true,
 		req:{'fire-making':true},
