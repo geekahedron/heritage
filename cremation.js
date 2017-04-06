@@ -19,7 +19,7 @@ func:function()
 	new G.Unit({
 		name:'crematorium',
 		desc:'@processes goods with fire<>A [crematorium] is an efficient way to dispose of .',//TODO : desc
-		icon:[0,1,cremationSheet],
+		icon:[1,0,cremationSheet],
 		cost:{'basic building materials':50},
 		use:{'land':1},
 		//require:{'worker':1,'fire pit':1},
