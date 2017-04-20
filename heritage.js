@@ -1,4 +1,4 @@
-GM.AddData({
+G.AddData({
 name:'Heritage mod',
 author:'geekahedron',
 desc:'A collection of mods and improvements for NeverEnding Legacy.',
