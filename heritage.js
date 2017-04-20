@@ -25,7 +25,7 @@ func:function()
 	G.hSetting=[];
 	G.hSettingByName=[];
 	G.hSettingCategories=[];
-	
+
 	G.HSetting=function(obj)
 	{
 		this.type='policy';	// required to work with G.checkReq()
