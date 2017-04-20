@@ -77,6 +77,31 @@ func:function()
 		type:'convert',from:{'corpse':1,'pot':1,'log':30,'fire pit':0.5},into:{'urn':1},every:10,mode:'cremate'
 	});
 
+// Add setting to turn the whole thing on or off
+	new G.HSetting({
+		name:'enablecremation',
+		displayName:'Enable Cremation',
+		desc:'Enable the appearance of creation tech and abilities.',
+		icon:[16,2,8,3,13,7],
+		cost:{},
+		startsWith:true,
+		visible:false,
+		binary: true,
+		modes:{
+			'off':{
+				name:'Disabled',
+				desc:'This policy is disabled.'
+			},
+			'on':{
+				name:'Enabled',
+				desc:'This policy is enabled.'
+			},
+		},
+		effects:{
+			'onChange':{func:G.callbackEnableCremation}
+		},
+		category:'debug',	// for now, this is the easiest way to hide it (but precludes use of the G.setPolicyMode functions)
+	});
 /************************************************
  *             HERITAGE SETTINGS                *
  ************************************************
