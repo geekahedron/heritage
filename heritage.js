@@ -12,7 +12,73 @@ sheets:{
 func:function()
 {
 /************************************************
- *            HERITAGE SETTINGS              *
+ *               CREMATION TEST                 *
+ ************************************************
+ * 
+ * Another way to get rid of bodies, using fire!
+ */
+
+	// function callback to make changes and clean up when the option is changed
+	G.callbackEnableCremation = function()
+	{
+		// if (G.getSetting('enablecremation') == true)
+		if (G.checkPolicy('enablecremation') == "on") {
+			G.middleText('- Cremation Enabled -');
+			G.getDict('cremation').req=({'fire-making':true,'ritualism':true,'pottery':true})
+			// G.getDict('cremation').req=({'tribalism':true})
+		}
+		else {
+			G.middleText('- Cremation Disabled -');
+			G.getDict('cremation').req=({'unobtainable':true})
+	// remove tech
+			for (i in G.techsOwned) {
+				if (G.techsOwned[i].tech.name == 'cremation') {
+					G.techsOwned.splice(i,1);
+					G.techsOwnedNames.splice(i,1);
+					G.applyKnowEffects(G.getDict('cremation'),true,true);
+					G.update['tech']();
+					break;
+				}
+			}
+		}
+	};
+
+	new G.Res({
+		name:'urn',
+		desc:'A [pot] filled with the [ash,ashes] of a loved one.//May slowly boost [faith] when kept.',
+		icon:[13,5,8,3],
+		tick:function(me,tick) {
+			var changed = me.amount*0.01;
+			G.pseudoGather(G.getRes('faith'),randomFloor(changed));
+		},
+		category:'misc',
+	});
+
+// Add new research to unlock cremation	
+	new G.Tech({
+		name:'cremation',
+		desc:'@Corpses can be ritually burned to promote health and spirituality.',
+		icon:[0,1,'heritageSheet'],
+		cost:{'insight':10},
+		req:{'fire-making':true,'ritualism':true,'pottery':true,'enablecremation':true},
+		// req:{'tribalism':true,'enablecremation':true},	// easier to debug with minimal requirements
+		effects:[
+		],
+	});
+
+// Add cremate mode to firekeepers with the required effect
+	G.getDict('firekeeper').modes['cremate']={
+		name:'cremate',
+		desc:'Burn 1 [corpse] with [fire pit,fire] on a pyre of 10 [log]s, and put the ashes into a [pot] to make an [urn]',
+		icon:[16,2,8,3,13,7],
+		req:{'cremation':true}
+	};
+	G.getDict('firekeeper').effects.push({
+		type:'convert',from:{'corpse':1,'pot':1,'log':30,'fire pit':0.5},into:{'urn':1},every:10,mode:'cremate'
+	});
+
+/************************************************
+ *             HERITAGE SETTINGS                *
  ************************************************
  *
  * Use hidden in-game policies as 'settings' for this mod.
@@ -21,7 +87,7 @@ func:function()
  *
  */	
 
- // For starters, basically wraps/mimics the default policy definition with a few additions
+// For starters, basically wraps/mimics the default policy definition with a few additions
 	G.hSetting=[];
 	G.hSettingByName=[];
 	G.hSettingCategories=[];
@@ -227,6 +293,35 @@ func:function()
 		G.dialogue.getCloseButton()+
 		'</div>';
 		return str;
+	}
+
+/************************************************/
+/*                  INCLUDES                    */
+/************************************************/
+
+// a few placeholder items to keep things hidden if necessary
+	new G.Res({
+		name:'unobtainium',
+		desc:'@[unobtainium] can never actually be unlocked without cheating//@used to hide other things',
+		icon:[3,0],
+		category:'misc',
+	});
+
+	new G.Trait({
+		name:'unobtainable',
+		desc:'This trait cannot be obtained without cheating',
+		icon:[3,0],
+		cost:{},
+		chance:100,
+		effects:[
+		],
+		req:{'unobtainium':1},
+	});
+
+// helper function to remove mode from a unit
+	G.removeMode=function(unit,mode)
+	{
+		delete G.getDict(unit).modes[mode];
 	}
 
 }
