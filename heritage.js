@@ -12,97 +12,6 @@ sheets:{
 func:function()
 {
 /************************************************
- *               CREMATION TEST                 *
- ************************************************
- * 
- * Another way to get rid of bodies, using fire!
- */
-
-	// function callback to make changes and clean up when the option is changed
-	G.callbackEnableCremation = function()
-	{
-		// if (G.getSetting('enablecremation') == true)
-		if (G.checkPolicy('enablecremation') == "on") {
-			G.middleText('- Cremation Enabled -');
-			G.getDict('cremation').req=({'fire-making':true,'ritualism':true,'pottery':true})
-			// G.getDict('cremation').req=({'tribalism':true})
-		}
-		else {
-			G.middleText('- Cremation Disabled -');
-			G.getDict('cremation').req=({'unobtainable':true})
-	// remove tech
-			for (i in G.techsOwned) {
-				if (G.techsOwned[i].tech.name == 'cremation') {
-					G.techsOwned.splice(i,1);
-					G.techsOwnedNames.splice(i,1);
-					G.applyKnowEffects(G.getDict('cremation'),true,true);
-					G.update['tech']();
-					break;
-				}
-			}
-		}
-	};
-
-	new G.Res({
-		name:'urn',
-		desc:'A [pot] filled with the [ash,ashes] of a loved one.//May slowly boost [faith] when kept.',
-		icon:[13,5,8,3],
-		tick:function(me,tick) {
-			var changed = me.amount*0.01;
-			G.pseudoGather(G.getRes('faith'),randomFloor(changed));
-		},
-		category:'misc',
-	});
-
-// Add new research to unlock cremation	
-	new G.Tech({
-		name:'cremation',
-		desc:'@Corpses can be ritually burned to promote health and spirituality.',
-		icon:[0,1,'heritageSheet'],
-		cost:{'insight':10},
-		req:{'fire-making':true,'ritualism':true,'pottery':true,'enablecremation':true},
-		// req:{'tribalism':true,'enablecremation':true},	// easier to debug with minimal requirements
-		effects:[
-		],
-	});
-
-// Add cremate mode to firekeepers with the required effect
-	G.getDict('firekeeper').modes['cremate']={
-		name:'cremate',
-		desc:'Burn 1 [corpse] with [fire pit,fire] on a pyre of 10 [log]s, and put the ashes into a [pot] to make an [urn]',
-		icon:[16,2,8,3,13,7],
-		req:{'cremation':true}
-	};
-	G.getDict('firekeeper').effects.push({
-		type:'convert',from:{'corpse':1,'pot':1,'log':30,'fire pit':0.5},into:{'urn':1},every:10,mode:'cremate'
-	});
-
-// Add setting to turn the whole thing on or off
-	new G.HSetting({
-		name:'enablecremation',
-		displayName:'Enable Cremation',
-		desc:'Enable the appearance of creation tech and abilities.',
-		icon:[16,2,8,3,13,7],
-		cost:{},
-		startsWith:true,
-		visible:false,
-		binary: true,
-		modes:{
-			'off':{
-				name:'Disabled',
-				desc:'This policy is disabled.'
-			},
-			'on':{
-				name:'Enabled',
-				desc:'This policy is enabled.'
-			},
-		},
-		effects:{
-			'onChange':{func:G.callbackEnableCremation}
-		},
-		category:'debug',	// for now, this is the easiest way to hide it (but precludes use of the G.setPolicyMode functions)
-	});
-/************************************************
  *             HERITAGE SETTINGS                *
  ************************************************
  *
@@ -250,6 +159,99 @@ func:function()
 			}
 		}
 	}
+
+/************************************************
+ *               CREMATION TEST                 *
+ ************************************************
+ * 
+ * Another way to get rid of bodies, using fire!
+ */
+
+	// function callback to make changes and clean up when the option is changed
+	G.callbackEnableCremation = function()
+	{
+		// if (G.getSetting('enablecremation') == true)
+		if (G.checkPolicy('enablecremation') == "on") {
+			G.middleText('- Cremation Enabled -');
+			G.getDict('cremation').req=({'fire-making':true,'ritualism':true,'pottery':true})
+			// G.getDict('cremation').req=({'tribalism':true})
+		}
+		else {
+			G.middleText('- Cremation Disabled -');
+			G.getDict('cremation').req=({'unobtainable':true})
+	// remove tech
+			for (i in G.techsOwned) {
+				if (G.techsOwned[i].tech.name == 'cremation') {
+					G.techsOwned.splice(i,1);
+					G.techsOwnedNames.splice(i,1);
+					G.applyKnowEffects(G.getDict('cremation'),true,true);
+					G.update['tech']();
+					break;
+				}
+			}
+		}
+	};
+
+	new G.Res({
+		name:'urn',
+		desc:'A [pot] filled with the [ash,ashes] of a loved one.//May slowly boost [faith] when kept.',
+		icon:[13,5,8,3],
+		tick:function(me,tick) {
+			var changed = me.amount*0.01;
+			G.pseudoGather(G.getRes('faith'),randomFloor(changed));
+		},
+		category:'misc',
+	});
+
+// Add new research to unlock cremation	
+	new G.Tech({
+		name:'cremation',
+		desc:'@Corpses can be ritually burned to promote health and spirituality.',
+		icon:[0,1,'heritageSheet'],
+		cost:{'insight':10},
+		req:{'fire-making':true,'ritualism':true,'pottery':true,'enablecremation':true},
+		// req:{'tribalism':true,'enablecremation':true},	// easier to debug with minimal requirements
+		effects:[
+		],
+	});
+
+// Add cremate mode to firekeepers with the required effect
+	G.getDict('firekeeper').modes['cremate']={
+		name:'cremate',
+		desc:'Burn 1 [corpse] with [fire pit,fire] on a pyre of 10 [log]s, and put the ashes into a [pot] to make an [urn]',
+		icon:[16,2,8,3,13,7],
+		req:{'cremation':true}
+	};
+	G.getDict('firekeeper').effects.push({
+		type:'convert',from:{'corpse':1,'pot':1,'log':30,'fire pit':0.5},into:{'urn':1},every:10,mode:'cremate'
+	});
+
+// Add setting to turn the whole thing on or off
+	new G.HSetting({
+		name:'enablecremation',
+		displayName:'Enable Cremation',
+		desc:'Enable the appearance of creation tech and abilities.',
+		icon:[16,2,8,3,13,7],
+		cost:{},
+		startsWith:true,
+		visible:false,
+		binary: true,
+		modes:{
+			'off':{
+				name:'Disabled',
+				desc:'This policy is disabled.'
+			},
+			'on':{
+				name:'Enabled',
+				desc:'This policy is enabled.'
+			},
+		},
+		effects:{
+			'onChange':{func:G.callbackEnableCremation}
+		},
+		category:'debug',	// for now, this is the easiest way to hide it (but precludes use of the G.setPolicyMode functions)
+	});
+
 /************************************************
  *            HERITAGE OPTIONS TAB              *
  ************************************************
