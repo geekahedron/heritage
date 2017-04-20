@@ -80,25 +80,26 @@ func:function()
 		G.setHSettingMode(me,me.modes[mode]);
 	}
 
-	G.setHSettingMode(me,mode)
+	G.setHSettingMode=function(me,mode)
 	{
 		//free old mode uses, and assign new mode uses
 		var oldMode=me.mode;
 		var newMode=mode;
-		if (oldMode==newMode) return;
-
-		me.mode=mode;
-
-		if (me.mode.effects) G.applyKnowEffects(me.mode,false,true);
-		if (G.getSetting('animations')) triggerAnim(me.l,'plop');
-		if (me.binary)
+		if (oldMode!=newMode)
 		{
-			if (mode.id=='off') me.l.classList.add('off');
-			else me.l.classList.remove('off');
-		}
+			me.mode=mode;
 
-		// function callback specifically for HSettings
-		if (me.effects.onChange) me.effects.onChange.func();
+			if (me.mode.effects) G.applyKnowEffects(me.mode,false,true);
+			if (G.getSetting('animations')) triggerAnim(me.l,'plop');
+			if (me.binary)
+			{
+				if (mode.id=='off') me.l.classList.add('off');
+				else me.l.classList.remove('off');
+			}
+
+			// function callback specifically for HSettings
+			if (me.effects.onChange) me.effects.onChange.func();
+		}
 	}
 
 	G.writeHeritageSettingButton=function(obj)
