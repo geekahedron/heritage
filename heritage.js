@@ -90,11 +90,15 @@ func:function()
 			me.mode=mode;
 
 			if (me.mode.effects) G.applyKnowEffects(me.mode,false,true);
-			if (G.getSetting('animations')) triggerAnim(me.l,'plop');
-			if (me.binary)
+			
+			if (me.l != 0)	// only update visuals for displayed policy buttons
 			{
-				if (mode.id=='off') me.l.classList.add('off');
-				else me.l.classList.remove('off');
+				if (G.getSetting('animations')) triggerAnim(me.l,'plop');
+				if (me.binary)
+				{
+					if (mode.id=='off') me.l.classList.add('off');
+					else me.l.classList.remove('off');
+				}
 			}
 
 			// function callback specifically for HSettings
