@@ -1,6 +1,7 @@
 G.DeclareManifest({
 name:'Heritage mod',
 updates:{
-	'Heritage mod*':'https://rawgit.com/geekahedron/heritage/master/heritage.js',
+	// CDN of stable image for publication
+	'Heritage mod*':'https://cdn.rawgit.com/geekahedron/heritage/2dd7ba4928781a50038beb7878904ccd3938af0e/heritage.js',
 }
 });
