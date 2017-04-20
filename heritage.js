@@ -193,6 +193,17 @@ func:function()
 					break;
 				}
 			}
+
+			// change mode on existing firekeepers from cremate to default
+			var len=G.unitsOwned.length;
+			var units=[];
+			for (var i=0;i<len;i++)
+			{
+				if (G.unitsOwned[i].unit.name=='firekeeper' && G.unitsOwned[i].mode.id=='cremate')
+				{
+					G.setUnitMode(G.unitsOwned[i], G.unitsOwned[i].unit.modes['stick fires']);
+				}
+			}
 		}
 	};
 
