@@ -247,7 +247,7 @@ func:function()
 		desc:'A [pot] filled with the ashes of a loved one.//May slowly boost [faith] when kept.',
 		icon:[11,7,13,5],
 		tick:function(me,tick) {
-			var changed = me.amount*0.001;
+			var changed = me.amount*0.01;
 			G.pseudoGather(G.getRes('faith'),randomFloor(changed));
 			var toBreak=me.amount*0.001;
 			var spent=G.lose(me.name,randomFloor(toBreak),'breaking');
@@ -330,7 +330,7 @@ func:function()
 		
 		// disclaimer blurb for the top
 		str+='<div class="par">'+
-		'<b>Heritage</b> is a modpack for NeverEnding Legacy by <a href="http://geekahedron.com/" target="_blank">geekahedron</a>.'+
+		'<b>NeverEnding Heritage</b> is a modpack for NeverEnding Legacy by <a href="https://github.com/geekahedron/heritage" target="_blank">geekahedron</a>.'+
 		'It is currently in early alpha, may feature strange and exotic bugs, and may be updated at any time.</div>'+
 		'<div class="par">While in development, the modpack may be unstable and subject to changes, but the overall goal is to '+
 		'expand and improve the legacy with flexible, balanced, user-created content and improvements to existing mechanics.</div>'+
@@ -340,27 +340,33 @@ func:function()
 		// add buttons for mod-specific settings
 		'<div class="barred fancyText">Modpack options</div>'+
 		G.writeHeritageSettingButton({
-				id:'enablecremation',
-				name:'enablecremation',
-				text:'Enable Cremation technology',
-				tooltip:'Turn on the ability for your society to discover cremation technology.'
-			})+
+			id:'enablecremation',
+			name:'enablecremation',
+			text:'Enable Cremation technology',
+			tooltip:'Turn on the ability for your society to discover cremation technology.'
+		})+
 		G.writeHeritageSettingButton({
-				id:'enablelogfires',
-				name:'enablelogfires',
-				text:'Enable log fires',
-				tooltip:'Turn on the ability to burn logs as well as sticks to create fire.'
-			})+
+			id:'enablelogfires',
+			name:'enablelogfires',
+			text:'Enable log fires',
+			tooltip:'Turn on the ability to burn logs as well as sticks to create fire.'
+		})+
 		'<br /><br />'+
 
 		// add buttons for hidden base game settings
-		'<div class="barred fancyText">Expanded options</div>'+
+		'<div class="barred fancyText">Display options</div>'+
+		G.writeHeritageSettingButton({
+			id:'separateunits',
+			name:'separateunits',
+			text:'Separate unit categories',
+			tooltip:'Always display unit categories on separate lines on the production screen.'
+		})+
 		G.writeSettingButton({
-				id:'tiereddisplay',
-				name:'tieredDisplay',
-				text:'Enable research tiers',
-				tooltip:'Turn on display of available research, arranged in tiers by cost.'
-			})+
+			id:'tiereddisplay',
+			name:'tieredDisplay',
+			text:'Enable research tiers',
+			tooltip:'Turn on display of available research, arranged in tiers by cost.'
+		})+
 
 		'<div class="divider"></div>'+
 		'<div class="buttonBox">'+
@@ -411,5 +417,44 @@ func:function()
 			}
 		}
 	}
+
+/************************************************/
+/*              BASE GAME TWEAKS                */
+/************************************************/
+
+// separate all unit categories into new lines, make more use of the space especially in early game
+	G.separateUnitCategories=function(sep)
+	{
+		if (sep)
+		{
+			fromstr="inline-block";
+			tostr="block";
+		} else {
+			fromstr="block";
+			tostr="inline-block";
+		}
+		G.update['unit'] = eval("("+G.update['unit'].toString().replace('style="display:'+fromstr+';"','style="display:'+tostr+';"')+")");
+		G.update['unit']();
+	}
+
+	// callback function to make the change
+	G.callbackSeparateUnits=function() {
+		G.separateUnitCategories(G.checkHSetting('separateunits')=="on");
+	}
+
+	// setting to enable the log fires
+	new G.HSetting({
+		name:'separateunits',
+		displayName:'Separate Unit Categories',
+		desc:'Change the display of unit categories to always appear on separate lines.',
+		icon:[0,8,1,12],
+		cost:{},
+		startsWith:true,
+		visible:false,
+		binary: true,
+		effects:{
+			'onChange':{func:G.callbackSeparateUnits}
+		},
+	});
 }
 });
