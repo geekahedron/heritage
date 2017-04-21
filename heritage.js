@@ -449,17 +449,13 @@ func:function()
 	// call this once when the mod loads to restore saved state
 	G.initializeSeparateUnits=function()
 	{
-		console.log('checking separate units');
 		if (isEmpty(G.update['unit']))
 		{
-			console.log('function not yet defined, sleeping');
 			setTimeout(this,1000);
 		} else {
-			console.log('fixing display to match options');
 			G.callbackSeparateUnits();
 		}
 	}
-	console.log(G.update['unit']);
 	setTimeout(G.initializeSeparateUnits,500);	// wait to start, since the empty check doesn't seem to work
 }
 });
