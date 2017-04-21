@@ -21,7 +21,7 @@ func:function()
  *
  */	
 
-// For starters, basically wraps/mimics the default policy definition with a few additions
+// For starters, basically wraps/mimics the default policy definition, with a few additions
 	G.hSetting=[];
 	G.hSettingByName=[];
 	G.hSettingCategories=[];
@@ -176,7 +176,7 @@ func:function()
 		name:'Start fires from logs',
 		desc:'Craft [fire pit]s from 1 [log]s each.',
 		icon:[1,6,13,7],
-		req:{'fire-making':true,'woodcutting':true,'enablelogfires':true},
+		req:{'fire-making':true,'woodcutting':true,'enablelogfires':'on'},
 	};
 	G.getDict('firekeeper').effects.push({
 		type:'convert',from:{'log':1},into:{'fire pit':1},every:5,mode:'log fires'
@@ -192,15 +192,7 @@ func:function()
 			G.middleText('- Log Fires Disabled -');
 
 			// change mode on existing firekeepers from log fires to stick fires
-			var len=G.unitsOwned.length;
-			var units=[];
-			for (var i=0;i<len;i++)
-			{
-				if (G.unitsOwned[i].unit.name=='firekeeper' && G.unitsOwned[i].mode.id=='log fires')
-				{
-					G.setUnitMode(G.unitsOwned[i], G.unitsOwned[i].unit.modes['stick fires']);
-				}
-			}
+			G.convertUnitMode('firekeeper','log fires','stick fires');
 		}
 	}
 
@@ -209,7 +201,7 @@ func:function()
 		name:'enablelogfires',
 		displayName:'Enable Log Fires',
 		desc:'Allow the burning of logs for more effiecient fires.',
-		icon:[1,6,13,7,22,1],
+		icon:[16,2,1,6,13,7],
 		cost:{},
 		startsWith:true,
 		visible:false,
@@ -246,25 +238,19 @@ func:function()
 			}
 
 			// change mode on existing firekeepers from cremate to default
-			var len=G.unitsOwned.length;
-			var units=[];
-			for (var i=0;i<len;i++)
-			{
-				if (G.unitsOwned[i].unit.name=='firekeeper' && G.unitsOwned[i].mode.id=='cremate')
-				{
-					G.setUnitMode(G.unitsOwned[i], G.unitsOwned[i].unit.modes['stick fires']);
-				}
-			}
+			G.convertUnitMode('firekeeper','cremate','stick fires');
 		}
 	};
 
 	new G.Res({
 		name:'urn',
-		desc:'A [pot] filled with the [ash,ashes] of a loved one.//May slowly boost [faith] when kept.',
-		icon:[13,5,8,3],
+		desc:'A [pot] filled with the ashes of a loved one.//May slowly boost [faith] when kept.',
+		icon:[11,7,13,5],
 		tick:function(me,tick) {
-			var changed = me.amount*0.01;
+			var changed = me.amount*0.001;
 			G.pseudoGather(G.getRes('faith'),randomFloor(changed));
+			var toBreak=me.amount*0.001;
+			var spent=G.lose(me.name,randomFloor(toBreak),'breaking');
 		},
 		category:'misc',
 	});
@@ -412,5 +398,18 @@ func:function()
 		delete G.getDict(unit).modes[mode];
 	}
 
+// helper function to convert existing units from one mode to another
+	G.convertUnitMode=function(unit,modeFrom,modeTo)
+	{
+		var len=G.unitsOwned.length;
+		var units=[];
+		for (var i=0;i<len;i++)
+		{
+			if (G.unitsOwned[i].unit.name==unit && G.unitsOwned[i].mode.id==modeFrom)
+			{
+				G.setUnitMode(G.unitsOwned[i], G.unitsOwned[i].unit.modes[modeTo]);
+			}
+		}
+	}
 }
 });
