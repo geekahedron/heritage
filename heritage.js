@@ -203,7 +203,7 @@ func:function()
 		type:'convert',from:{'log':1},into:{'fire pit':1},every:5,mode:'log fires'
 	});
 
-	new G.Hsetting({
+	new G.HSetting({
 		name:'enablelogfires',
 		displayName:'Enable Log Fires',
 		desc:'Allow the burning of logs for more effiecient fires.',
