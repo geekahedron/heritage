@@ -185,7 +185,7 @@ func:function()
 // callback function to effect changes when setting is toggled
 	G.callbackEnableLogFires=function()
 	{
-		if (G.checkHSetting('enablecremation') == "on") {
+		if (G.checkHSetting('enablelogfires') == "on") {
 			G.middleText('- Log Fires Enabled -');
 		}
 		else {
