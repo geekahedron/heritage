@@ -171,6 +171,18 @@ func:function()
  * 
  * Improved methods of making fires and keeping the populous warm
  */	
+// add log-burning mode to firekeepers
+	G.getDict('firekeeper').modes['log fires']={
+		name:'Start fires from logs',
+		desc:'Craft [fire pit]s from 1 [log]s each.',
+		icon:[1,6,13,7],
+		req:{'fire-making':true,'woodcutting':true,'enablelogfires':true},
+	};
+	G.getDict('firekeeper').effects.push({
+		type:'convert',from:{'log':1},into:{'fire pit':1},every:5,mode:'log fires'
+	});
+
+// callback function to effect changes when setting is toggled
 	G.callbackEnableLogFires=function()
 	{
 		if (G.checkHSetting('enablecremation') == "on") {
@@ -192,17 +204,7 @@ func:function()
 		}
 	}
 
-// add log-burning mode to firekeepers
-	G.getDict('firekeeper').modes['log fires']={
-		name:'Start fires from logs',
-		desc:'Craft [fire pit]s from 1 [log]s each.',
-		icon:[1,6,13,7],
-		req:{'fire-making':true,'woodcutting':true,'enablelogfires':true},
-	};
-	G.getDict('firekeeper').effects.push({
-		type:'convert',from:{'log':1},into:{'fire pit':1},every:5,mode:'log fires'
-	});
-
+// setting to enable the log fires
 	new G.HSetting({
 		name:'enablelogfires',
 		displayName:'Enable Log Fires',
@@ -216,6 +218,7 @@ func:function()
 			'onChange':{func:G.callbackEnableLogFires}
 		},
 	});
+
 /************************************************
  *               CREMATION v0.1                 *
  ************************************************
