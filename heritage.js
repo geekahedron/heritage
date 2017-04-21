@@ -382,20 +382,9 @@ func:function()
 // a few placeholder items to keep things hidden if necessary
 	new G.Res({
 		name:'unobtainium',
-		desc:'@[unobtainium] can never actually be unlocked without cheating//@used to hide other things',
-		icon:[3,0],
+		desc:'@[unobtainium] can never actually be unlocked without cheating//@can be used to hide other things or make them unattainable',
+		icon:[3,12,11,8,3,0],
 		category:'misc',
-	});
-
-	new G.Trait({
-		name:'unobtainable',
-		desc:'This trait cannot be obtained without cheating',
-		icon:[3,0],
-		cost:{},
-		chance:100,
-		effects:[
-		],
-		req:{'unobtainium':1},
 	});
 
 // helper function to remove mode from a unit
@@ -456,5 +445,21 @@ func:function()
 			'onChange':{func:G.callbackSeparateUnits}
 		},
 	});
+
+	// call this once when the mod loads to restore saved state
+	G.initializeSeparateUnits=function()
+	{
+		console.log('checking separate units');
+		if (isEmpty(G.update['unit']))
+		{
+			console.log('function not yet defined, sleeping');
+			setTimeout(this,1000);
+		} else {
+			console.log('fixing display to match options');
+			G.callbackSeparateUnits();
+		}
+	}
+	console.log(G.update['unit']);
+	setTimeout(G.initializeSeparateUnits,500);	// wait to start, since the empty check doesn't seem to work
 }
 });
