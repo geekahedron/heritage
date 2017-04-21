@@ -29,7 +29,7 @@ func:function()
 	G.HSetting=function(obj)
 	{
 		this.type='policy';	// required to work with G.checkReq()
-		this.category='debug';
+		this.category='debug';	// best way to keep them hidden for now
 		this.family='';
 		this.startWith=0;
 		this.icon=[0,0];
@@ -164,25 +164,73 @@ func:function()
 		}
 	}
 
+
 /************************************************
- *               CREMATION TEST                 *
+ *              FIRE MAKING TWEAKS              *
+ ************************************************
+ * 
+ * Improved methods of making fires and keeping the populous warm
+ */	
+	G.callbackEnableLogFires=function()
+	{
+		if (G.checkHSetting('enablecremation') == "on") {
+			G.middleText('- Log Fires Enabled -');
+		}
+		else {
+			G.middleText('- Log Fires Disabled -');
+
+			// change mode on existing firekeepers from log fires to stick fires
+			var len=G.unitsOwned.length;
+			var units=[];
+			for (var i=0;i<len;i++)
+			{
+				if (G.unitsOwned[i].unit.name=='firekeeper' && G.unitsOwned[i].mode.id=='log fires')
+				{
+					G.setUnitMode(G.unitsOwned[i], G.unitsOwned[i].unit.modes['stick fires']);
+				}
+			}
+		}
+	}
+
+// add log-burning mode to firekeepers
+	G.getDict('firekeeper').modes['log fires']={
+		name:'Start fires from logs',
+		desc:'Craft [fire pit]s from 1 [log]s each.',
+		icon:[1,6,13,7],
+		req:{'fire-making':true,'woodcutting':true,'enablelogfires':true},
+	};
+	G.getDict('firekeeper').effects.push({
+		type:'convert',from:{'log':1},into:{'fire pit':1},every:5,mode:'log fires'
+	});
+
+	new G.Hsetting({
+		name:'enablelogfires',
+		displayName:'Enable Log Fires',
+		desc:'Allow the burning of logs for more effiecient fires.',
+		icon:[1,6,13,7,22,1],
+		cost:{},
+		startsWith:true,
+		visible:false,
+		binary: true,
+		effects:{
+			'onChange':{func:G.callbackEnableLogFires}
+		},
+	});
+/************************************************
+ *               CREMATION v0.1                 *
  ************************************************
  * 
  * Another way to get rid of bodies, using fire!
  */
 
 	// function callback to make changes and clean up when the option is changed
-	G.callbackEnableCremation = function()
+	G.callbackEnableCremation=function()
 	{
-		// if (G.getSetting('enablecremation') == true)
-		if (G.checkPolicy('enablecremation') == "on") {
+		if (G.checkHSetting('enablecremation') == "on") {
 			G.middleText('- Cremation Enabled -');
-			G.getDict('cremation').req=({'fire-making':true,'ritualism':true,'pottery':true})
-			// G.getDict('cremation').req=({'tribalism':true})
 		}
 		else {
 			G.middleText('- Cremation Disabled -');
-			G.getDict('cremation').req=({'unobtainable':true})
 	// remove tech
 			for (i in G.techsOwned) {
 				if (G.techsOwned[i].tech.name == 'cremation') {
@@ -235,7 +283,7 @@ func:function()
 		name:'cremate',
 		desc:'Burn 1 [corpse] with [fire pit,fire] on a pyre of 10 [log]s, and put the ashes into a [pot] to make an [urn]',
 		icon:[16,2,8,3,13,7],
-		req:{'cremation':true}
+		req:{'cremation':true,'enablecremation':true}
 	};
 	G.getDict('firekeeper').effects.push({
 		type:'convert',from:{'corpse':1,'pot':1,'log':30,'fire pit':0.5},into:{'urn':1},every:10,mode:'cremate'
@@ -251,20 +299,9 @@ func:function()
 		startsWith:true,
 		visible:false,
 		binary: true,
-		modes:{
-			'off':{
-				name:'Disabled',
-				desc:'This policy is disabled.'
-			},
-			'on':{
-				name:'Enabled',
-				desc:'This policy is enabled.'
-			},
-		},
 		effects:{
 			'onChange':{func:G.callbackEnableCremation}
 		},
-		category:'debug',	// for now, this is the easiest way to hide it (but precludes use of the G.setPolicyMode functions)
 	});
 
 /************************************************
@@ -318,6 +355,12 @@ func:function()
 				name:'enablecremation',
 				text:'Enable Cremation technology',
 				tooltip:'Turn on the ability for your society to discover cremation technology.'
+			})+
+		G.writeHeritageSettingButton({
+				id:'enablelogfires',
+				name:'enablelogfires',
+				text:'Enable log fires',
+				tooltip:'Turn on the ability to burn logs as well as sticks to create fire.'
 			})+
 		'<br /><br />'+
 
