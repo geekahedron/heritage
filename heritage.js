@@ -1,5 +1,5 @@
 G.AddData({
-name:'Heritage mod',
+name:'NeverEnding Heritage mod',
 author:'geekahedron',
 desc:'A collection of mods and improvements for NeverEnding Legacy.',
 engineVersion:1,
