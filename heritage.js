@@ -476,10 +476,8 @@ func:function()
 	}
 	G.initializeFixIcons=function()
 	{
-		console.log('testing icon URLs');
 		if (G.parse("http://").search("http://") == -1)
 		{
-			console.log('applying icon fix');
 			G.fixTooltipIcons();
 			setTimeout(G.initializeFixIcons,500);	// check again to make sure this version of the function stays applied during page load
 		}
