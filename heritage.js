@@ -244,7 +244,7 @@ func:function()
 
 	new G.Res({
 		name:'urn',
-		desc:'A [pot] filled with the ashes of a loved one.//May slowly boost [faith] when kept.',
+		desc:'A [pot] filled with the ashes of a loved one from [cremation].//May slowly boost [faith] when kept.',
 		icon:[11,7,13,5],
 		tick:function(me,tick) {
 			var changed = me.amount*0.01;
@@ -414,15 +414,7 @@ func:function()
 // separate all unit categories into new lines, make more use of the space especially in early game
 	G.separateUnitCategories=function(sep)
 	{
-		if (sep)
-		{
-			fromstr="inline-block";
-			tostr="block";
-		} else {
-			fromstr="block";
-			tostr="inline-block";
-		}
-		G.update['unit'] = eval("("+G.update['unit'].toString().replace('style="display:'+fromstr+';"','style="display:'+tostr+';"')+")");
+		G.update['unit'] = eval("("+G.update['unit'].toString().replace('style="display:'+(sep?'inline-':'')+'block;"','style="display:'+(sep?'':'inline-')+'block;"')+")");
 		G.update['unit']();
 	}
 
@@ -431,7 +423,7 @@ func:function()
 		G.separateUnitCategories(G.checkHSetting('separateunits')=="on");
 	}
 
-	// setting to enable the log fires
+	// setting to toggle the separation of the unit categories
 	new G.HSetting({
 		name:'separateunits',
 		displayName:'Separate Unit Categories',
@@ -457,5 +449,41 @@ func:function()
 		}
 	}
 	setTimeout(G.initializeSeparateUnits,500);	// wait to start, since the empty check doesn't seem to work
+
+
+/************************************************/
+/*                 BUGFIXES                     */
+/************************************************/
+
+// Tooltip icon fix
+// fix corrupted display of third party icon sheets displayed within object tooltips
+// the problem was a markup shortcut using "//" which inconveniently clobbered the slashes in "http://" for any external resources
+	G.fixTooltipIcons=function()
+	{
+		G.parse=function(what)
+		{
+			var str='<div class="par">'+((what
+			.replaceAll(']s',',*PLURAL*]'))
+			.replace(/\[(.*?)\]/gi,G.parseFunc))
+			.replaceAll('http://','http:#SLASH#SLASH#')
+			.replaceAll('https://','https:#SLASH#SLASH#')
+			.replaceAll('//','</div><div class="par">')
+			.replaceAll('#SLASH#SLASH#','//')
+			.replaceAll('@','</div><div class="par bulleted">')
+			.replaceAll('<>','</div><div class="divider"></div><div class="par">')+'</div>';
+			return str;
+		}
+	}
+	G.initializeFixIcons=function()
+	{
+		console.log('testing icon URLs');
+		if (G.parse("http://").search("http://") == -1)
+		{
+			console.log('applying icon fix');
+			G.fixTooltipIcons();
+			setTimeout(G.initializeFixIcons,500);	// check again to make sure this version of the function stays applied during page load
+		}
+	}
+	G.initializeFixIcons();
 }
 });
