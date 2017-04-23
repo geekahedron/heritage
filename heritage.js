@@ -1,5 +1,5 @@
 G.AddData({
-name:'NeverEnding Heritage mod',
+name:'NeverEnding Heritage Mod',
 author:'geekahedron',
 desc:'A collection of mods and improvements for NeverEnding Legacy.',
 engineVersion:1,
@@ -384,6 +384,122 @@ func:function()
 		},
 	});
 
+/************************************************
+ *               Bread-Baking v0.1              *
+ ************************************************
+ * 
+ * Gatherers can find grain and firekeepers can turn it into bread (its a bit more complicated than that)
+ */
+//Note: This is taken from my mod, I have edited it a bit so it would work, but I'm not sure.	
+	
+		new G.Res({
+		name:'Grain',
+		desc:'[Grain] tastes unpleasant but can be used for many things. You can grind wheat into flour.',
+		//icon:[1,3,'imageSheet'], //TODO: Image for wheat
+		turnToByContext:{'eat':{'health':-10,'happiness':-100},'decay':{'spoiled food':0.3,'Grain':0.7}},
+		partOf:'food',
+		category:'food',
+	});
+	
+	G.getDict('grass').res['gather']['Grain']=0.05;
+	G.getDict('artisan').effects.push({type:'convert',from:{'Grain':1},into:{'Flour':2},every:5,mode:'GrindGrain'});
+	G.getDict('artisan').modes['GrindGrain']={name:'Grind Grain into Flour',desc:'Use Grain to make Flour',req:{'Grinding':true},use:{'stone tools':1}};
+	
+	
+		new G.Res({
+		name:'Flour',
+		desc:'You can bake [Flour] to make [Wheat Bread].',
+		//icon:[2,3,'imageSheet'], //TODO: Image for wheat
+		turnToByContext:{'eat':{'health':-30,'happiness':-100},'decay':{'spoiled food':0.2}},
+		partOf:'food',
+		category:'food',
+	});
+	
+		new G.Res({
+		name:'Bread',
+		desc:'[Bread] tastes really good.',
+		//icon:[0,3,'imageSheet'], //TODO: Image for wheat
+		turnToByContext:{'eat':{'health':3,'happiness':20},'decay':{'spoiled food':0.3,}},
+		partOf:'food',
+		category:'food',
+	});
+	
+	G.getDict('firekeeper').modes['Bread']={name:'Make Bread',desc:'Use Flour to make Bread.',req:{'Bread Baking':true},use:{'stone tools':1}};
+	G.getDict('firekeeper').effects.push({type:'convert',from:{'Flour':1},into:{'Bread':1},every:5,mode:'Bread'});
+	
+		new G.Tech({
+		name:'Grinding',
+		desc:'Unlocks the secrets of grinding grain into flour.',
+		//icon:[3,1,'imageSheet'],
+		cost:{'insight':15},
+		req:{'sedentism':true},
+	});
+		new G.Tech({
+		name:'Bread Baking',
+		desc:'Unlocks the secrets of baking bread.',
+		//icon:[3,0,'imageSheet'],
+		cost:{'insight':20},
+		req:{'Grinding':true, 'fire-making':true},
+	});
+		
+	
+	//I copied your button thingy. It may or may not work.
+	
+	// callback function to effect changes when setting is toggled
+	G.callbackEnableBread=function()
+	{
+		if (G.checkHSetting('enablebread') == "on") {
+			G.middleText('- Bread Baking Enabled -');
+		}
+		else {
+			G.middleText('- Bread Baking Disabled -');
+
+			// change mode on existing firekeepers from log fires to stick fires
+			//G.convertUnitMode('firekeeper','log fires','stick fires');
+			// remove tech
+			for (i in G.techsOwned) {
+				if (G.techsOwned[i].tech.name == 'Grinding') {
+					G.techsOwned.splice(i,1);
+					G.techsOwnedNames.splice(i,1);
+					G.applyKnowEffects(G.getDict('Grinding'),true,true);
+					G.update['tech']();
+					break;
+				}
+			}
+			// remove tech
+			for (i in G.techsOwned) {
+				if (G.techsOwned[i].tech.name == 'Bread Baking') {
+					G.techsOwned.splice(i,1);
+					G.techsOwnedNames.splice(i,1);
+					G.applyKnowEffects(G.getDict('Bread Baking'),true,true);
+					G.update['tech']();
+					break;
+				}
+			}
+
+		}
+	}
+
+// setting to enable the log fires
+	new G.HSetting({
+		hcategory:'heritage',
+		name:'enablebread',
+		displayName:'Enable Bread Baking',
+		desc:'Allow the grinding of grain, and baking of bread to provide food for your people.',
+		//icon:[16,2,1,6,13,7],
+		cost:{},
+		startsWith:true,
+		visible:false,
+		binary: true,
+		effects:{
+			'onChange':{func:G.callbackEnableBread}
+		},
+	});
+
+	
+	
+	
+	
 /************************************************
  *            HERITAGE OPTIONS TAB              *
  ************************************************
