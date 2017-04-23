@@ -24,7 +24,7 @@ func:function()
 // For starters, basically wraps/mimics the default policy definition, with a few additions
 	G.hSetting=[];
 	G.hSettingByName=[];
-	G.hSettingCategories=[];
+	G.hSettingCategory=[];
 
 	G.HSetting=function(obj)
 	{
@@ -41,6 +41,7 @@ func:function()
 		for (var i in obj) this[i]=obj[i];
 		this.id=G.policy.length;
 		if (!this.displayName) this.displayName=cap(this.name);
+		if(!this.hcategory) this.hcategory='hidden';
 		G.policy.push(this);
 		G.policyByName[this.name]=this;
 		G.setDict(this.name,this);
@@ -56,6 +57,14 @@ func:function()
 		this.mod=G.context;
 		
 		// extra stuff here
+		G.hSetting.push(this);
+		G.hSettingByName[this.name]=this;
+	}
+
+	G.baseHSetting=function(obj)
+	{
+		this.type='setting';
+		for (var i in obj) this[i]=obj[i];
 		G.hSetting.push(this);
 		G.hSettingByName[this.name]=this;
 	}
@@ -106,7 +115,8 @@ func:function()
 		}
 	}
 
-	G.writeHeritageSettingButton=function(obj)
+	// functions to create the interface buttons for these settings
+	G.writeHSettingButton=function(obj)
 	{
 		G.pushCallback(function(obj){return function(){
 			var div=l('hsettingButton-'+obj.id);
@@ -121,14 +131,14 @@ func:function()
 					if (on) div.classList.add('on');
 				}
 
-				div.onclick=function(div,name,value,siblings){return function(){G.clickHeritageSettingButton(div,name,value,siblings);}}(div,obj.name,obj.value,obj.siblings);
+				div.onclick=function(div,name,value,siblings){return function(){G.clickHSettingButton(div,name,value,siblings);}}(div,obj.name,obj.value,obj.siblings);
 				if (obj.tooltip) G.addTooltip(div,function(str){return function(){return str;};}(obj.tooltip),{offY:-8});
 			}
 		}}(obj));
 		return '<div class="button" id="hsettingButton-'+obj.id+'"></div>';
 	}
 
-	G.clickHeritageSettingButton=function(div,name,value,siblings)
+	G.clickHSettingButton=function(div,name,value,siblings)
 	{
 		var me=G.getHSetting(name);
 
@@ -147,8 +157,6 @@ func:function()
 			G.setHSettingMode(me,me.modes[value]);
 		}
 
-//		if (me.effects.onChange) me.effects.onChange.func();	// covered by setHSettingMode now
-
 		if (div)
 		{
 			var on=(me.mode.id=="on");
@@ -164,7 +172,88 @@ func:function()
 		}
 	}
 
+	// add and manage categories of settings for automation population
+	G.addHSettingCategory=function(obj)
+	{
+		// make sure the category doesn't exist
+		if (G.hSettingCategory['obj.id']===undefined)
+		{
+			G.hSettingCategory[obj.id]=obj;
+		}
+	}
+	
+	G.updateHSettingCategory=function(obj)
+	{
+		// make sure the category exists
+		if (G.hSettingCategory['obj.id']!==undefined)
+		{
+			for (var i in obj)
+			{
+				G.hSettingCategory['obj.id'][i] = obj[i];
+			}
+		} else {
+			console.error('No such hSetting category: ',obj.id);
+		}
+	}
 
+	// finally, a function to write each category of settings and buttons
+	G.writeHSettingCategories=function()
+	{
+		var str='';
+		for (c in G.hSettingCategory)
+		{
+			if (c=='hidden') continue;
+			var category=G.hSettingCategory[c];
+			str+='<div class="barred fancyText">'+category.displayName+'</div>';
+			for (var i in G.hSetting)
+			{
+				var s = G.hSetting[i];
+				if (s.hcategory == c)
+				{
+					if (s.type=='setting')
+					{
+						str+=G.writeSettingButton({
+							id:s.id,
+							name:s.name,
+							text:s.displayName,
+							tooltip:s.desc
+						});
+					} else {
+						str+=G.writeHSettingButton({
+							id:s.name,
+							name:s.name,
+							text:s.displayName,
+							tooltip:s.desc,
+						});
+					}
+				}
+			}
+			str+='<br /><br />';
+		}
+		return str;
+	}
+
+// add initial category for heritage mod settings
+	G.addHSettingCategory({
+		id:'heritage',
+		name:'heritage',
+		displayName:'Heritage modpack options',
+		desc:'Gameplay options from the Heritage modpack'
+	});
+
+	G.addHSettingCategory({
+		id:'display',
+		name:'display',
+		displayName:'Display options',
+	});
+
+	G.baseHSetting({
+		hcategory:'display',
+		id:'tiereddisplay',
+		name:'tieredDisplay',
+		displayName:'Enable research tiers',
+		desc:'Turn on display of available research, arranged in tiers by cost.'
+	});
 /************************************************
  *              FIRE MAKING TWEAKS              *
  ************************************************
@@ -198,6 +287,7 @@ func:function()
 
 // setting to enable the log fires
 	new G.HSetting({
+		hcategory:'heritage',
 		name:'enablelogfires',
 		displayName:'Enable Log Fires',
 		desc:'Allow the burning of logs for more effiecient fires.',
@@ -280,6 +370,7 @@ func:function()
 
 // Add setting to turn the whole thing on or off
 	new G.HSetting({
+		hcategory:'heritage',
 		name:'enablecremation',
 		displayName:'Enable Cremation',
 		desc:'Enable the appearance of creation tech and abilities.',
@@ -336,16 +427,16 @@ func:function()
 		'expand and improve the legacy with flexible, balanced, user-created content and improvements to existing mechanics.</div>'+
 
 		'<div class="fancyText title">Heritage Modpack</div>'+
-
+/*
 		// add buttons for mod-specific settings
 		'<div class="barred fancyText">Modpack options</div>'+
-		G.writeHeritageSettingButton({
+		G.writeHSettingButton({
 			id:'enablecremation',
 			name:'enablecremation',
 			text:'Enable Cremation technology',
 			tooltip:'Turn on the ability for your society to discover cremation technology.'
 		})+
-		G.writeHeritageSettingButton({
+		G.writeHSettingButton({
 			id:'enablelogfires',
 			name:'enablelogfires',
 			text:'Enable log fires',
@@ -355,7 +446,7 @@ func:function()
 
 		// add buttons for hidden base game settings
 		'<div class="barred fancyText">Display options</div>'+
-		G.writeHeritageSettingButton({
+		G.writeHSettingButton({
 			id:'separateunits',
 			name:'separateunits',
 			text:'Separate unit categories',
@@ -367,7 +458,8 @@ func:function()
 			text:'Enable research tiers',
 			tooltip:'Turn on display of available research, arranged in tiers by cost.'
 		})+
-
+*/
+		G.writeHSettingCategories()+
 		'<div class="divider"></div>'+
 		'<div class="buttonBox">'+
 		G.dialogue.getCloseButton()+
@@ -425,6 +517,7 @@ func:function()
 
 	// setting to toggle the separation of the unit categories
 	new G.HSetting({
+		hcategory:'display',
 		name:'separateunits',
 		displayName:'Separate Unit Categories',
 		desc:'Change the display of unit categories to always appear on separate lines.',
@@ -465,8 +558,7 @@ func:function()
 			var str='<div class="par">'+((what
 			.replaceAll(']s',',*PLURAL*]'))
 			.replace(/\[(.*?)\]/gi,G.parseFunc))
-			.replaceAll('http://','http:#SLASH#SLASH#')
-			.replaceAll('https://','https:#SLASH#SLASH#')
+			.replaceAll('http(s?)://','http$1:#SLASH#SLASH#')
 			.replaceAll('//','</div><div class="par">')
 			.replaceAll('#SLASH#SLASH#','//')
 			.replaceAll('@','</div><div class="par bulleted">')
