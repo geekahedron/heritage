@@ -2,6 +2,6 @@ G.DeclareManifest({
 name:'NeverEnding Heritage mod',
 updates:{
 	// CDN of stable image for publication
-	'*Heritage mod*':'https://cdn.rawgit.com/geekahedron/heritage/b56c8f22e288bc3c4725741a17cca237e0df6fe3/heritage.js',
+	'*Heritage mod*':'https://cdn.rawgit.com/geekahedron/heritage/78e4089419e26a81bf850777e9dd9698eb6694de/heritage.js',
 }
 });

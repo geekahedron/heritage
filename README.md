@@ -26,6 +26,7 @@ This tab will have toggle buttons for the different components of the mod, each 
 
 ## History
 
+v0.3: Generalized API for adding and display of settings, bugfix for technology requirements check
 v0.2: Updated release; new display options, bugfix for tooltip icons
 v0.1: Initial public release; options tab, log fires, cremation, research tiers
 
