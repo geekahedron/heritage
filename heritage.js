@@ -166,19 +166,6 @@ func:function()
 		desc:'Gameplay options from the Heritage modpack'
 	});
 
-	G.addHSettingCategory({
-		id:'display',
-		name:'display',
-		displayName:'Display options',
-	});
-
-	G.baseHSetting({
-		hcategory:'display',
-		id:'tiereddisplay',
-		name:'tieredDisplay',
-		displayName:'Enable research tiers',
-		desc:'Turn on display of available research, arranged in tiers by cost.'
-	});
 /************************************************
  *              FIRE MAKING TWEAKS              *
  ************************************************
@@ -255,7 +242,8 @@ func:function()
 	new G.Res({
 		name:'urn',
 		desc:'A [pot] filled with the ashes of a loved one from [cremation].//May slowly boost [faith] when kept.',
-		icon:[11,7,13,5],
+//		icon:[11,7,13,5],
+		icon:[4,1,'heritageSheet'],
 		tick:function(me,tick) {
 			var changed = me.amount*0.01;
 			G.pseudoGather(G.getRes('faith'),randomFloor(changed));
@@ -280,7 +268,8 @@ func:function()
 	G.getDict('firekeeper').modes['cremate']={
 		name:'cremate',
 		desc:'Burn 1 [corpse] with [fire pit,fire] on a pyre of 10 [log]s, and put the ashes into a [pot] to make an [urn]',
-		icon:[16,2,8,3,13,7],
+//		icon:[16,2,8,3,13,7],
+		icon:[2,1,'heritageSheet'],
 		req:{'cremation':true,'enablecremation':"on"}
 	};
 	G.getDict('firekeeper').effects.push({
@@ -478,6 +467,21 @@ func:function()
 /************************************************/
 /*              BASE GAME TWEAKS                */
 /************************************************/
+
+// add a button for the [built-in] setting to toggle the display of research tiers
+	G.addHSettingCategory({
+		id:'display',
+		name:'display',
+		displayName:'Display options',
+	});
+
+	G.baseHSetting({
+		hcategory:'display',
+		id:'tiereddisplay',
+		name:'tieredDisplay',
+		displayName:'Enable research tiers',
+		desc:'Turn on display of available research, arranged in tiers by cost.'
+	});
 
 // separate all unit categories into new lines, make more use of the space especially in early game
 	G.separateUnitCategories=function(sep)
