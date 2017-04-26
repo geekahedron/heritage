@@ -3,7 +3,7 @@ name:'Heritage mod',
 author:'geekahedron',
 desc:'A collection of mods and improvements for NeverEnding Legacy.',
 engineVersion:1,
-manifest:'https://rawgit.com/geekahedron/heritage/externalref/heritageModManifest.js',
+manifest:'https://rawgit.com/geekahedron/heritage/enternalref/heritageModManifest.js',
 requires:['Default dataset*'],
 sheets:{
 	'heritageSheet':'https://cdn.rawgit.com/geekahedron/heritage/018c0de80c706c0a2bae3ce11d71b1e4fadb1cbc/img/heritageModIconSheet.png',

@@ -3,7 +3,7 @@ name:'Hot Pepper mod',
 author:'Orteil,geekahedron',
 desc:'A simple example mod that adds hot peppers and hot sauce, demonstrating hooks with the heritage mod API.',
 engineVersion:1,
-manifest:'https://rawgit.com/geekahedron/heritage/externalref/hotpepperModManifest.js',
+manifest:'https://rawgit.com/geekahedron/heritage/enternalref/hotpepperModManifest.js',
 requires:['Default dataset*','Heritage*'],
 sheets:{'spicySheet':'img/spicyModIconSheet.png'},//custom stylesheet (note : broken in IE and Edge for the time being)
 func:function()
