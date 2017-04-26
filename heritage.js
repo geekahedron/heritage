@@ -3,7 +3,7 @@ name:'Heritage mod',
 author:'geekahedron',
 desc:'A collection of mods and improvements for NeverEnding Legacy.',
 engineVersion:1,
-manifest:'https://rawgit.com/geekahedron/heritage/master/heritageModManifest.js',
+manifest:'https://rawgit.com/geekahedron/heritage/externalref/heritageModManifest.js',
 requires:['Default dataset*'],
 sheets:{
 	'heritageSheet':'https://cdn.rawgit.com/geekahedron/heritage/018c0de80c706c0a2bae3ce11d71b1e4fadb1cbc/img/heritageModIconSheet.png',
@@ -461,6 +461,32 @@ func:function()
 			{
 				G.setUnitMode(G.unitsOwned[i], G.unitsOwned[i].unit.modes[modeTo]);
 			}
+		}
+	}
+
+	G.removeTrait=function(name) {
+		var index=G.traitsOwnedNames.indexOf(name);
+		if (index > -1)
+		{
+			console.log('Removing trait: '+name);
+			var me = G.traitsOwned[index];
+			G.traitsOwned.splice(index,1);
+			G.traitsOwnedNames.splice(index,1);
+			G.applyKnowEffects(me.trait,true,true);
+			G.update['trait']();
+		}
+	}
+
+	G.removeTech=function(name) {
+		var index=G.techsOwnedNames.indexOf(name);
+		if (index > -1)
+		{
+			console.log('Removing tech: '+name);
+			var me=G.techsOwned[index];
+			G.techsOwned.splice(index,1);
+			G.techsOwnedNames.splice(index,1);
+			G.applyKnowEffects(me.tech,true,true);
+			G.update['tech']();
 		}
 	}
 
