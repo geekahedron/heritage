@@ -1,18 +1,17 @@
 G.AddData({
-name:'NeverEnding Heritage mod',
+name:'Heritage mod',
 author:'geekahedron',
 desc:'A collection of mods and improvements for NeverEnding Legacy.',
 engineVersion:1,
 manifest:'https://rawgit.com/geekahedron/heritage/master/heritageModManifest.js',
 requires:['Default dataset*'],
 sheets:{
-	'heritageSheet':'https://rawgit.com/geekahedron/heritage/master/img/heritageModIconSheet.png',
-	'expandSheet':'https://rawgit.com/geekahedron/heritage/master/img/expandModIconSheet.png',
+	'heritageSheet':'https://cdn.rawgit.com/geekahedron/heritage/018c0de80c706c0a2bae3ce11d71b1e4fadb1cbc/img/heritageModIconSheet.png',
 },
 func:function()
 {
 /************************************************
- *             HERITAGE SETTINGS                *
+ *           HERITAGE SETTINGS API              *
  ************************************************
  *
  * Use hidden in-game policies as 'settings' for this mod.
@@ -25,6 +24,7 @@ func:function()
 	G.hSetting=[];
 	G.hSettingByName=[];
 	G.hSettingCategory=[];
+	G.HSettingsLoaded=false;
 
 	G.HSetting=function(obj)
 	{
@@ -36,12 +36,15 @@ func:function()
 		this.modes=[];
 		this.mode=0;
 		this.req={};
+
+		this.cost={};
+		this.startsWith=true;
 		this.visible=false;
 
 		for (var i in obj) this[i]=obj[i];
 		this.id=G.policy.length;
 		if (!this.displayName) this.displayName=cap(this.name);
-		if(!this.hcategory) this.hcategory='hidden';
+		if(!this.hcategory) this.hcategory=G.context.name;
 		G.policy.push(this);
 		G.policyByName[this.name]=this;
 		G.setDict(this.name,this);
@@ -55,10 +58,17 @@ func:function()
 			this.binary=true;
 		}
 		this.mod=G.context;
-		
+
 		// extra stuff here
 		G.hSetting.push(this);
 		G.hSettingByName[this.name]=this;
+	}
+
+// wrapper function to make sure all settings are displayed when added
+	G.addHSetting=function(obj)
+	{
+		new G.HSetting(obj);
+		if (G.HSettingsLoaded) G.buildTabs();	// after intial load, rebuild the tabs to display new settings
 	}
 
 	G.baseHSetting=function(obj)
@@ -115,7 +125,187 @@ func:function()
 		}
 	}
 
-	// functions to create the interface buttons for these settings
+	// add and manage categories of settings for automation population
+	G.addHSettingCategory=function(obj)
+	{
+		if (!obj.id) obj.id=G.context.name;	// if not specified, add a category specific to the calling mod
+		if (!obj.name) obj.name=obj.id;
+
+		// make sure the category doesn't exist
+		if (G.hSettingCategory[obj.id]===undefined)
+		{
+			G.hSettingCategory[obj.id]=obj;
+		} else {
+			console.error("HSetting category ",obj.id," already exists");
+		}
+	}
+
+	G.updateHSettingCategory=function(obj)
+	{
+		// make sure the category exists
+		if (G.hSettingCategory['obj.id']!==undefined)
+		{
+			for (var i in obj)
+			{
+				G.hSettingCategory['obj.id'][i] = obj[i];
+			}
+		} else {
+			console.error('No such hSetting category: ',obj.id);
+		}
+	}
+
+/************************************************
+ *             HERITAGE SETTINGS                *
+ ************************************************
+ *
+ * Add initial category for heritage mod built-in settings.
+ * Other mods and additions can create their own categories by the same means.
+ */
+	G.addHSettingCategory({
+		displayName:'Heritage modpack options',
+		desc:'Gameplay options from the Heritage modpack'
+	});
+
+	G.addHSettingCategory({
+		id:'display',
+		name:'display',
+		displayName:'Display options',
+	});
+
+	G.baseHSetting({
+		hcategory:'display',
+		id:'tiereddisplay',
+		name:'tieredDisplay',
+		displayName:'Enable research tiers',
+		desc:'Turn on display of available research, arranged in tiers by cost.'
+	});
+/************************************************
+ *              FIRE MAKING TWEAKS              *
+ ************************************************
+ * 
+ * Improved methods of making fires and keeping the populous warm
+ */	
+// add log-burning mode to firekeepers
+	G.getDict('firekeeper').modes['log fires']={
+		name:'Start fires from logs',
+		desc:'Craft [fire pit]s from 1 [log]s each.',
+		icon:[1,6,13,7],
+		req:{'fire-making':true,'woodcutting':true,'enablelogfires':'on'},
+	};
+	G.getDict('firekeeper').effects.push({
+		type:'convert',from:{'log':1},into:{'fire pit':1},every:5,mode:'log fires'
+	});
+
+// callback function to effect changes when setting is toggled
+	G.callbackEnableLogFires=function()
+	{
+		if (G.checkHSetting('enablelogfires') == "on") {
+			G.middleText('- Log Fires Enabled -');
+		}
+		else {
+			G.middleText('- Log Fires Disabled -');
+
+			// change mode on existing firekeepers from log fires to stick fires
+			G.convertUnitMode('firekeeper','log fires','stick fires');
+		}
+	}
+
+// setting to enable the log fires
+	G.addHSetting({
+		name:'enablelogfires',
+		displayName:'Enable Log Fires',
+		desc:'Allow the burning of logs for more effiecient fires.',
+		icon:[16,2,1,6,13,7],
+		effects:{
+			'onChange':{func:G.callbackEnableLogFires}
+		},
+	});
+
+/************************************************
+ *               CREMATION v0.1                 *
+ ************************************************
+ * 
+ * Another way to get rid of bodies, using fire!
+ */
+
+	// function callback to make changes and clean up when the option is changed
+	G.callbackEnableCremation=function()
+	{
+		if (G.checkHSetting('enablecremation') == "on") {
+			G.middleText('- Cremation Enabled -');
+		}
+		else {
+			G.middleText('- Cremation Disabled -');
+	// remove tech
+			for (i in G.techsOwned) {
+				if (G.techsOwned[i].tech.name == 'cremation') {
+					G.techsOwned.splice(i,1);
+					G.techsOwnedNames.splice(i,1);
+					G.applyKnowEffects(G.getDict('cremation'),true,true);
+					G.update['tech']();
+					break;
+				}
+			}
+
+			// change mode on existing firekeepers from cremate to default
+			G.convertUnitMode('firekeeper','cremate','stick fires');
+		}
+	};
+
+	new G.Res({
+		name:'urn',
+		desc:'A [pot] filled with the ashes of a loved one from [cremation].//May slowly boost [faith] when kept.',
+		icon:[11,7,13,5],
+		tick:function(me,tick) {
+			var changed = me.amount*0.01;
+			G.pseudoGather(G.getRes('faith'),randomFloor(changed));
+			var toBreak=me.amount*0.001;
+			var spent=G.lose(me.name,randomFloor(toBreak),'breaking');
+		},
+		category:'misc',
+	});
+
+// Add new research to unlock cremation	
+	new G.Tech({
+		name:'cremation',
+		desc:'@Corpses can be ritually burned to promote health and spirituality.',
+		icon:[0,1,'heritageSheet'],
+		cost:{'insight':10},
+		req:{'fire-making':true,'ritualism':true,'pottery':true,'woodcutting':true,'enablecremation':"on"},
+		effects:[
+		],
+	});
+
+// Add cremate mode to firekeepers with the required effect
+	G.getDict('firekeeper').modes['cremate']={
+		name:'cremate',
+		desc:'Burn 1 [corpse] with [fire pit,fire] on a pyre of 10 [log]s, and put the ashes into a [pot] to make an [urn]',
+		icon:[16,2,8,3,13,7],
+		req:{'cremation':true,'enablecremation':"on"}
+	};
+	G.getDict('firekeeper').effects.push({
+		type:'convert',from:{'corpse':1,'pot':1,'log':30,'fire pit':0.5},into:{'urn':1},every:10,mode:'cremate'
+	});
+
+// Add setting to turn the whole thing on or off
+	G.addHSetting({
+		name:'enablecremation',
+		displayName:'Enable Cremation',
+		desc:'Enable the appearance of creation tech and abilities.',
+		icon:[16,2,8,3,13,7],
+		effects:{
+			'onChange':{func:G.callbackEnableCremation}
+		},
+	});
+
+/************************************************
+ *            HERITAGE OPTIONS TAB              *
+ ************************************************
+ *
+ * Add a tab to the GUI for options and information specific to this mod.
+ *
+ */
+	// functions to create the interface buttons for the mod settings
 	G.writeHSettingButton=function(obj)
 	{
 		G.pushCallback(function(obj){return function(){
@@ -172,31 +362,7 @@ func:function()
 		}
 	}
 
-	// add and manage categories of settings for automation population
-	G.addHSettingCategory=function(obj)
-	{
-		// make sure the category doesn't exist
-		if (G.hSettingCategory['obj.id']===undefined)
-		{
-			G.hSettingCategory[obj.id]=obj;
-		}
-	}
-	
-	G.updateHSettingCategory=function(obj)
-	{
-		// make sure the category exists
-		if (G.hSettingCategory['obj.id']!==undefined)
-		{
-			for (var i in obj)
-			{
-				G.hSettingCategory['obj.id'][i] = obj[i];
-			}
-		} else {
-			console.error('No such hSetting category: ',obj.id);
-		}
-	}
-
-	// finally, a function to write each category of settings and buttons
+	// A function to write each category of settings and buttons
 	G.writeHSettingCategories=function()
 	{
 		var str='';
@@ -233,173 +399,15 @@ func:function()
 		return str;
 	}
 
-// add initial category for heritage mod settings
-	G.addHSettingCategory({
-		id:'heritage',
-		name:'heritage',
-		displayName:'Heritage modpack options',
-		desc:'Gameplay options from the Heritage modpack'
-	});
-
-	G.addHSettingCategory({
-		id:'display',
-		name:'display',
-		displayName:'Display options',
-	});
-
-	G.baseHSetting({
-		hcategory:'display',
-		id:'tiereddisplay',
-		name:'tieredDisplay',
-		displayName:'Enable research tiers',
-		desc:'Turn on display of available research, arranged in tiers by cost.'
-	});
-/************************************************
- *              FIRE MAKING TWEAKS              *
- ************************************************
- * 
- * Improved methods of making fires and keeping the populous warm
- */	
-// add log-burning mode to firekeepers
-	G.getDict('firekeeper').modes['log fires']={
-		name:'Start fires from logs',
-		desc:'Craft [fire pit]s from 1 [log]s each.',
-		icon:[1,6,13,7],
-		req:{'fire-making':true,'woodcutting':true,'enablelogfires':'on'},
-	};
-	G.getDict('firekeeper').effects.push({
-		type:'convert',from:{'log':1},into:{'fire pit':1},every:5,mode:'log fires'
-	});
-
-// callback function to effect changes when setting is toggled
-	G.callbackEnableLogFires=function()
-	{
-		if (G.checkHSetting('enablelogfires') == "on") {
-			G.middleText('- Log Fires Enabled -');
-		}
-		else {
-			G.middleText('- Log Fires Disabled -');
-
-			// change mode on existing firekeepers from log fires to stick fires
-			G.convertUnitMode('firekeeper','log fires','stick fires');
-		}
-	}
-
-// setting to enable the log fires
-	new G.HSetting({
-		hcategory:'heritage',
-		name:'enablelogfires',
-		displayName:'Enable Log Fires',
-		desc:'Allow the burning of logs for more effiecient fires.',
-		icon:[16,2,1,6,13,7],
-		cost:{},
-		startsWith:true,
-		visible:false,
-		binary: true,
-		effects:{
-			'onChange':{func:G.callbackEnableLogFires}
-		},
-	});
-
-/************************************************
- *               CREMATION v0.1                 *
- ************************************************
- * 
- * Another way to get rid of bodies, using fire!
- */
-
-	// function callback to make changes and clean up when the option is changed
-	G.callbackEnableCremation=function()
-	{
-		if (G.checkHSetting('enablecremation') == "on") {
-			G.middleText('- Cremation Enabled -');
-		}
-		else {
-			G.middleText('- Cremation Disabled -');
-	// remove tech
-			for (i in G.techsOwned) {
-				if (G.techsOwned[i].tech.name == 'cremation') {
-					G.techsOwned.splice(i,1);
-					G.techsOwnedNames.splice(i,1);
-					G.applyKnowEffects(G.getDict('cremation'),true,true);
-					G.update['tech']();
-					break;
-				}
-			}
-
-			// change mode on existing firekeepers from cremate to default
-			G.convertUnitMode('firekeeper','cremate','stick fires');
-		}
-	};
-
-	new G.Res({
-		name:'urn',
-		desc:'A [pot] filled with the ashes of a loved one from [cremation].//May slowly boost [faith] when kept.',
-		icon:[11,7,13,5],
-		tick:function(me,tick) {
-			var changed = me.amount*0.01;
-			G.pseudoGather(G.getRes('faith'),randomFloor(changed));
-			var toBreak=me.amount*0.001;
-			var spent=G.lose(me.name,randomFloor(toBreak),'breaking');
-		},
-		category:'misc',
-	});
-
-// Add new research to unlock cremation	
-	new G.Tech({
-		name:'cremation',
-		desc:'@Corpses can be ritually burned to promote health and spirituality.',
-		icon:[0,1,'heritageSheet'],
-		cost:{'insight':10},
-		req:{'fire-making':true,'ritualism':true,'pottery':true,'enablecremation':true},
-		// req:{'tribalism':true,'enablecremation':true},	// easier to debug with minimal requirements
-		effects:[
-		],
-	});
-
-// Add cremate mode to firekeepers with the required effect
-	G.getDict('firekeeper').modes['cremate']={
-		name:'cremate',
-		desc:'Burn 1 [corpse] with [fire pit,fire] on a pyre of 10 [log]s, and put the ashes into a [pot] to make an [urn]',
-		icon:[16,2,8,3,13,7],
-		req:{'cremation':true,'enablecremation':true}
-	};
-	G.getDict('firekeeper').effects.push({
-		type:'convert',from:{'corpse':1,'pot':1,'log':30,'fire pit':0.5},into:{'urn':1},every:10,mode:'cremate'
-	});
-
-// Add setting to turn the whole thing on or off
-	new G.HSetting({
-		hcategory:'heritage',
-		name:'enablecremation',
-		displayName:'Enable Cremation',
-		desc:'Enable the appearance of creation tech and abilities.',
-		icon:[16,2,8,3,13,7],
-		cost:{},
-		startsWith:true,
-		visible:false,
-		binary: true,
-		effects:{
-			'onChange':{func:G.callbackEnableCremation}
-		},
-	});
-
-/************************************************
- *            HERITAGE OPTIONS TAB              *
- ************************************************
- *
- * Add a tab to the GUI for options and information specific to this mod.
- *
- */
-
-	// only add the tab once per page load (otherwise tab will duplicate with new game or mod reloading)
-	var addTab = true;
+	// only add the tab once per page load (otherwise tab will duplicate itself with new game or mod reloading)
 	for (t in G.tabs) {
 		if (G.tabs[t].name=='Heritage')
-			addTab = false;
+		{
+			G.HSettingsLoaded = true;
+		}
 	}
 
-	if (addTab)
+	if (!G.HSettingsLoaded)
 	{
 		G.tabs.push({
 			name:'Heritage',
@@ -413,6 +421,7 @@ func:function()
 		// make sure everything is numbered and built properly
 		for (var i=0;i<G.tabs.length;i++){G.tabs[i].I=i;}
 		G.buildTabs();
+		
 	}
 
 	G.tabPopup['heritage']=function()
@@ -425,40 +434,7 @@ func:function()
 		'It is currently in early alpha, may feature strange and exotic bugs, and may be updated at any time.</div>'+
 		'<div class="par">While in development, the modpack may be unstable and subject to changes, but the overall goal is to '+
 		'expand and improve the legacy with flexible, balanced, user-created content and improvements to existing mechanics.</div>'+
-
 		'<div class="fancyText title">Heritage Modpack</div>'+
-/*
-		// add buttons for mod-specific settings
-		'<div class="barred fancyText">Modpack options</div>'+
-		G.writeHSettingButton({
-			id:'enablecremation',
-			name:'enablecremation',
-			text:'Enable Cremation technology',
-			tooltip:'Turn on the ability for your society to discover cremation technology.'
-		})+
-		G.writeHSettingButton({
-			id:'enablelogfires',
-			name:'enablelogfires',
-			text:'Enable log fires',
-			tooltip:'Turn on the ability to burn logs as well as sticks to create fire.'
-		})+
-		'<br /><br />'+
-
-		// add buttons for hidden base game settings
-		'<div class="barred fancyText">Display options</div>'+
-		G.writeHSettingButton({
-			id:'separateunits',
-			name:'separateunits',
-			text:'Separate unit categories',
-			tooltip:'Always display unit categories on separate lines on the production screen.'
-		})+
-		G.writeSettingButton({
-			id:'tiereddisplay',
-			name:'tieredDisplay',
-			text:'Enable research tiers',
-			tooltip:'Turn on display of available research, arranged in tiers by cost.'
-		})+
-*/
 		G.writeHSettingCategories()+
 		'<div class="divider"></div>'+
 		'<div class="buttonBox">'+
@@ -522,10 +498,6 @@ func:function()
 		displayName:'Separate Unit Categories',
 		desc:'Change the display of unit categories to always appear on separate lines.',
 		icon:[0,8,1,12],
-		cost:{},
-		startsWith:true,
-		visible:false,
-		binary: true,
 		effects:{
 			'onChange':{func:G.callbackSeparateUnits}
 		},
