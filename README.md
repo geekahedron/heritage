@@ -7,7 +7,7 @@ It features a new GUI tab with toggle-able options for the different gameplay el
 ## Installation
 
 Start a new game of Legacy and click the "Use mods" button, adding the latest version of the main script file one a new line (leave data.js in place).
-The current public version is mirrored at: https://cdn.rawgit.com/geekahedron/heritage/b56c8f22e288bc3c4725741a17cca237e0df6fe3/heritage.js
+The current public version is mirrored at: https://cdn.jsdelivr.net/gh/geekahedron/heritage@b56c8f22e288bc3c4725741a17cca237e0df6fe3/heritage.js
 
 You only have to include this once, and the manifest will update automatically to provide ew, stable (and backwards-compatible) versions as they are released.
 
